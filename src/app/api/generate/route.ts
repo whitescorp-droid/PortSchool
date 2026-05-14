@@ -17,15 +17,6 @@ export async function POST(req: Request) {
     const key = process.env.API_KEY || '';
     console.log(`AI Request: Subject=${subject}, Topic=${topic}, Key starts with: ${key.substring(0, 5)}...`);
 
-    // Model seçimi (Alternatifleri dene)
-    let model;
-    try {
-      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
-    } catch (e) {
-      console.log('Flash-8b failed, trying Pro...');
-      model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-    }
-
     const prompt = `
       Sen profesyonel bir öğretmensin. 
       ${grade}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
@@ -47,17 +38,49 @@ export async function POST(req: Request) {
       Sadece JSON döndür.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Model seçimi (Alternatifleri dene)
+    let model;
+    let text = '';
     
-    // JSON temizleme (bazı durumlarda markdown blokları içine alabiliyor)
+    try {
+      console.log('Trying gemini-1.5-flash...');
+      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      text = response.text();
+    } catch (sdkError: any) {
+      console.error('SDK Error:', sdkError.message || sdkError);
+      
+      // Direct Fetch Fallback
+      console.log('SDK failed, attempting direct fetch...');
+      const fetchRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+      
+      if (!fetchRes.ok) {
+        const errorData = await fetchRes.json();
+        console.error('Direct Fetch Error:', JSON.stringify(errorData));
+        throw new Error(`AI Service failed: ${fetchRes.statusText}`);
+      }
+      
+      const fetchResult = await fetchRes.json();
+      text = fetchResult.candidates[0].content.parts[0].text;
+    }
+    
+    // JSON temizleme
     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const data = JSON.parse(jsonStr);
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('AI Generation Error:', error);
-    return NextResponse.json({ error: 'İçerik üretilirken bir hata oluştu.' }, { status: 500 });
+  } catch (error: any) {
+    console.error('CRITICAL AI ERROR:', error.message || error);
+    return NextResponse.json({ 
+      error: 'İçerik üretilirken bir hata oluştu.',
+      details: error.message 
+    }, { status: 500 });
   }
 }
