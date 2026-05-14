@@ -36,18 +36,25 @@ export async function POST(req: Request) {
       }
     `;
 
-    // Model deneme listesi (v1beta üzerinden)
-    const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    // Genişletilmiş Deneme Listesi (Sürüm + Model)
+    const configurations = [
+      { ver: 'v1beta', model: 'gemini-1.5-flash' },
+      { ver: 'v1', model: 'gemini-1.5-flash' },
+      { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
+      { ver: 'v1beta', model: 'gemini-pro' },
+      { ver: 'v1', model: 'gemini-pro' }
+    ];
+
     let text = '';
     let success = false;
     let lastError = '';
 
-    for (const modelName of models) {
+    for (const config of configurations) {
       if (success) break;
       
       try {
-        console.log(`Trying model: ${modelName} on v1beta...`);
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+        console.log(`Trying ${config.model} on ${config.ver}...`);
+        const apiUrl = `https://generativelanguage.googleapis.com/${config.ver}/models/${config.model}:generateContent?key=${key}`;
         
         const res = await fetch(apiUrl, {
           method: 'POST',
@@ -62,18 +69,19 @@ export async function POST(req: Request) {
           text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
           if (text) {
             success = true;
+            console.log(`Success with ${config.model} (${config.ver})`);
           }
         } else {
           const errorData = await res.json();
-          lastError = `API ${res.status}: ${errorData.error?.message || res.statusText}`;
+          lastError = `${config.ver}/${config.model} -> ${res.status}: ${errorData.error?.message || res.statusText}`;
         }
       } catch (err: any) {
-        lastError = err.message;
+        lastError = `${config.ver}/${config.model} -> Connection Error: ${err.message}`;
       }
     }
 
     if (!success) {
-      throw new Error(`Tüm modeller denendi ancak başarısız oldu. Son hata: ${lastError}`);
+      throw new Error(`Tüm modeller ve sürümler denendi. Son hata: ${lastError}`);
     }
 
     // JSON'ı metnin içinden regex ile ayıkla
