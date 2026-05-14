@@ -5,6 +5,7 @@ import { BookOpen, HelpCircle, Star, CheckCircle, XCircle, Loader2 } from 'lucid
 
 export default function AIPanel({ subject }: { subject: string }) {
   const [topic, setTopic] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
