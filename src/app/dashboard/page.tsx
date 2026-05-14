@@ -26,9 +26,12 @@ export default async function DashboardPage() {
 
   const subjects = [
     { name: 'Matematik', icon: '📐' },
-    { name: 'Fen Bilimleri', icon: '🧪' },
-    { name: 'Türkçe', icon: '📚' },
-    { name: 'Sosyal Bilgiler', icon: '🌍' },
+    { name: 'Fizik', icon: '⚛️' },
+    { name: 'Kimya', icon: '🧪' },
+    { name: 'Biyoloji', icon: '🧬' },
+    { name: 'Türk Dili ve Edebiyatı', icon: '📚' },
+    { name: 'Tarih', icon: '📜' },
+    { name: 'Coğrafya', icon: '🌍' },
     { name: 'İngilizce', icon: '🇬🇧' },
   ];
 

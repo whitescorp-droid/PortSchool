@@ -14,9 +14,12 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
   // Örnek konular (Normalde bir DB'den gelebilir ama yapay zekaya sormak için başlangıç noktası)
   const topics: Record<string, string[]> = {
     'matematik': ['Sayılar', 'Cebir', 'Geometri', 'Trigonometri', 'Türev', 'İntegral'],
-    'fen-bilimleri': ['Hücre ve Bölünmeler', 'Kuvvet ve Enerji', 'Madde ve Isı', 'Vücudumuzdaki Sistemler'],
-    'turkce': ['Sözcükte Anlam', 'Cümlede Anlam', 'Paragraf', 'Yazım Kuralları'],
-    'sosyal-bilgiler': ['Tarih', 'Coğrafya', 'Vatandaşlık', 'Ekonomi'],
+    'fizik': ['Vektörler', 'Kuvvet ve Hareket', 'Elektrik ve Manyetizma', 'Optik', 'Modern Fizik'],
+    'kimya': ['Atom ve Periyodik Sistem', 'Kimyasal Türler Arası Etkileşimler', 'Mol Kavramı', 'Organik Kimya'],
+    'biyoloji': ['Hücre', 'Kalıtım', 'Ekosistem Ekolojisi', 'Sistemler'],
+    'turk-dili-ve-edebiyati': ['Edebiyatın Esasları', 'Şiir', 'Roman', 'Tiyatro', 'Dil Bilgisi'],
+    'tarih': ['Tarih ve Zaman', 'İlk Çağ Medeniyetleri', 'Osmanlı Tarihi', 'İnkılap Tarihi'],
+    'cografya': ['Doğa ve İnsan', 'Dünyanın Şekli ve Hareketleri', 'Yerleşme ve Nüfus', 'Türkiye Coğrafyası'],
     'ingilizce': ['Vocabulary', 'Grammar', 'Reading', 'Writing'],
   };
 
