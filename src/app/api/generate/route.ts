@@ -13,17 +13,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ders ve konu gereklidir.' }, { status: 400 });
     }
 
-    // API Key Güvenlik Kontrolü ve Loglama
     const key = process.env.API_KEY || '';
-    console.log(`AI Request: Subject=${subject}, Topic=${topic}, Key starts with: ${key.substring(0, 5)}...`);
+    console.log(`AI Request: Subject=${subject}, Topic=${topic}`);
 
     const prompt = `
       Sen profesyonel bir öğretmensin. 
-      ${grade}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
+      ${grade || '9'}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
       1. Detaylı, anlaşılır ve ilgi çekici ders notları hazırla. (Markdown formatında)
       2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla. Her sorunun 4 şıkkı (A, B, C, D) ve 1 doğru cevabı olsun.
       
-      Yanıtı şu JSON formatında ver:
+      Yanıtı sadece aşağıdaki JSON formatında ver, başka hiçbir metin ekleme:
       {
         "content": "markdown_formatında_ders_notları",
         "questions": [
@@ -31,53 +30,44 @@ export async function POST(req: Request) {
             "id": 1,
             "question": "soru_metni",
             "options": ["A_şıkkı", "B_şıkkı", "C_şıkkı", "D_şıkkı"],
-            "correctAnswer": "doğru_şık_endeksi_0_3"
+            "correctAnswer": "0"
           }
         ]
       }
-      Sadece JSON döndür.
     `;
 
-    // Model seçimi (Alternatifleri dene)
-    let model;
-    let text = '';
+    // SDK yerine Doğrudan Fetch Kullanımı (Vercel için en kararlı yöntem)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
     
-    try {
-      console.log('Trying gemini-1.5-flash...');
-      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      text = response.text();
-    } catch (sdkError: any) {
-      console.error('SDK Error:', sdkError.message || sdkError);
-      
-      // Direct Fetch Fallback
-      console.log('SDK failed, attempting direct fetch...');
-      const fetchRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-      
-      if (!fetchRes.ok) {
-        const errorData = await fetchRes.json();
-        console.error('Direct Fetch Error:', JSON.stringify(errorData));
-        throw new Error(`AI Service failed: ${fetchRes.statusText}`);
-      }
-      
-      const fetchResult = await fetchRes.json();
-      text = fetchResult.candidates[0].content.parts[0].text;
-    }
-    
-    // JSON temizleme
-    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const data = JSON.parse(jsonStr);
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Gemini API Error:', errorText);
+      throw new Error(`API Hatası: ${res.status} - ${res.statusText}`);
+    }
+
+    const result = await res.json();
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    // JSON'ı metnin içinden regex ile ayıkla
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('No JSON found in AI response:', text);
+      throw new Error('Yapay zeka geçerli bir JSON yanıtı oluşturamadı.');
+    }
+
+    const data = JSON.parse(jsonMatch[0]);
     return NextResponse.json(data);
+
   } catch (error: any) {
-    console.error('CRITICAL AI ERROR:', error.message || error);
+    console.error('AI GENERATION FAILED:', error);
     return NextResponse.json({ 
       error: 'İçerik üretilirken bir hata oluştu.',
       details: error.message 
