@@ -47,8 +47,9 @@ export async function POST(req: Request) {
     // Debug: Key format kontrolü (Güvenli şekilde)
     console.log(`KEY DEBUG: Starts with ${key.substring(0, 3)}, Ends with ${key.substring(key.length - 3)}, Length: ${key.length}`);
 
-    // Sizin anahtarınızın desteklediği güncel modeller (2026 standartları)
+    // Kota dostu (429 hatasını azaltmak için) hafif ve hızlı modeller
     const configurations = [
+      { ver: 'v1beta', model: 'gemini-2.0-flash-lite' },
       { ver: 'v1beta', model: 'gemini-2.0-flash' },
       { ver: 'v1beta', model: 'gemini-flash-latest' },
       { ver: 'v1beta', model: 'gemini-pro-latest' }
