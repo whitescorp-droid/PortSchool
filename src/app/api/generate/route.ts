@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY || '', 'v1');
+const genAI = new GoogleGenerativeAI(process.env.API_KEY || '');
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ders ve konu gereklidir.' }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel(
+      { model: 'gemini-1.5-flash' },
+      { apiVersion: 'v1' }
+    );
 
     const prompt = `
       Sen profesyonel bir öğretmensin. 
