@@ -26,40 +26,9 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
   const subjectTopics = topics[decodedSubject] || [];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: '280px', borderRight: '1px solid hsl(var(--border))', padding: '2rem' }}>
-        <a href="/dashboard" style={{ color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', opacity: 0.8 }}>
-          ← Geri Dön
-        </a>
-        <h2 style={{ marginBottom: '1rem', color: 'white' }}>{subjectName}</h2>
-        <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', marginBottom: '2rem' }}>Çalışmak istediğin konuyu seç.</p>
-        
-        <nav>
-          {subjectTopics.map(topic => (
-            <div key={topic} style={{ marginBottom: '0.5rem' }}>
-              <button 
-                className="btn" 
-                style={{ 
-                  width: '100%', 
-                  textAlign: 'left', 
-                  justifyContent: 'flex-start',
-                  background: 'transparent',
-                  border: '1px solid transparent',
-                  padding: '0.5rem 1rem',
-                  color: 'white'
-                }}
-                // İleride client component ile seçim yapılacak
-              >
-                {topic}
-              </button>
-            </div>
-          ))}
-        </nav>
-      </aside>
-
-      <main style={{ flex: 1, padding: '3rem' }}>
-        <AIPanel subject={subjectName} />
-      </main>
+    <div style={{ minHeight: '100vh' }}>
+      <AIPanel subject={subjectName} />
     </div>
   );
+}
 }

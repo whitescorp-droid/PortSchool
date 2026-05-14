@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    // Model deneme listesi (Sırasıyla dene)
+    // Model deneme listesi (v1beta üzerinden)
     const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
     let text = '';
     let success = false;
@@ -46,8 +46,8 @@ export async function POST(req: Request) {
       if (success) break;
       
       try {
-        console.log(`Trying model: ${modelName}...`);
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${key}`;
+        console.log(`Trying model: ${modelName} on v1beta...`);
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
         
         const res = await fetch(apiUrl, {
           method: 'POST',
@@ -62,16 +62,13 @@ export async function POST(req: Request) {
           text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
           if (text) {
             success = true;
-            console.log(`Successfully generated with ${modelName}`);
           }
         } else {
           const errorData = await res.json();
           lastError = `API ${res.status}: ${errorData.error?.message || res.statusText}`;
-          console.warn(`${modelName} failed: ${lastError}`);
         }
       } catch (err: any) {
         lastError = err.message;
-        console.error(`${modelName} connection error:`, err);
       }
     }
 
