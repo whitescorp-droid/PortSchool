@@ -3,11 +3,13 @@ import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import AIPanel from '@/components/AIPanel';
 
-export default async function SubjectPage({ params }: { params: { subject: string } }) {
+export default async function SubjectPage({ params }: { params: Promise<{ subject: string }> }) {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const subjectName = params.subject.charAt(0).toUpperCase() + params.subject.slice(1);
+  const { subject } = await params;
+  const decodedSubject = decodeURIComponent(subject);
+  const subjectName = decodedSubject.charAt(0).toUpperCase() + decodedSubject.slice(1);
   
   // Örnek konular (Normalde bir DB'den gelebilir ama yapay zekaya sormak için başlangıç noktası)
   const topics: Record<string, string[]> = {
@@ -18,7 +20,7 @@ export default async function SubjectPage({ params }: { params: { subject: strin
     'ingilizce': ['Vocabulary', 'Grammar', 'Reading', 'Writing'],
   };
 
-  const subjectTopics = topics[params.subject] || [];
+  const subjectTopics = topics[decodedSubject] || [];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
