@@ -5,19 +5,23 @@ const protectedRoutes = ['/dashboard', '/leaderboard'];
 const publicRoutes = ['/login', '/register', '/'];
 
 export default async function proxy(req: NextRequest) {
-  const path = req.nextUrl.pathname;
-  const isProtectedRoute = protectedRoutes.includes(path);
-  const isPublicRoute = publicRoutes.includes(path);
+  try {
+    const path = req.nextUrl.pathname;
+    const isProtectedRoute = protectedRoutes.includes(path);
+    const isPublicRoute = publicRoutes.includes(path);
 
-  const cookie = req.cookies.get('session')?.value;
-  const session = cookie ? await decrypt(cookie).catch(() => null) : null;
+    const cookie = req.cookies.get('session')?.value;
+    const session = cookie ? await decrypt(cookie).catch(() => null) : null;
 
-  if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl));
-  }
+    if (isProtectedRoute && !session) {
+      return NextResponse.redirect(new URL('/login', req.nextUrl));
+    }
 
-  if (isPublicRoute && session && !path.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+    if (isPublicRoute && session && !path.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+    }
+  } catch (error) {
+    console.error('Proxy error:', error);
   }
 
   return NextResponse.next();
