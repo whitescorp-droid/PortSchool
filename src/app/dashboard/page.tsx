@@ -8,10 +8,21 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: { activities: { orderBy: { createdAt: 'desc' }, take: 5 } }
-  });
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { activities: { orderBy: { createdAt: 'desc' }, take: 5 } }
+    });
+  } catch (error) {
+    console.error('Database fetch error:', error);
+  }
+
+  if (!user && session) {
+     // Kullanıcı silinmiş veya bulunamıyor olabilir
+     await logout();
+     redirect('/login');
+  }
 
   const subjects = [
     { name: 'Matematik', icon: '📐' },
