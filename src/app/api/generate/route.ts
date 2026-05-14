@@ -19,19 +19,17 @@ export async function POST(req: Request) {
       ${grade || '9'}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
       1. Detaylı, anlaşılır ve ilgi çekici ders notları hazırla. (Markdown formatında)
       2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla.
-      3. Konuyu görselleştiren, interaktif, animasyonlu bir HTML/JS/CSS simülasyonu kodu hazırla. (Canvas veya modern CSS kullanabilirsin).
+      3. Konuyu görselleştiren, interaktif, animasyonlu bir HTML/JS/CSS simülasyonu kodu hazırla.
       
       ÖNEMLİ KURALLAR:
-      - Yanıtı SADECE saf JSON formatında ver.
-      - simulationCode alanı içinde SADECE tek bir HTML dosyası gibi çalışan (style ve script etiketleri dahil) kod döndür.
-      - Simülasyon arka planı koyu (#0f0f14) olsun ve modern bir görünüme sahip olsun.
-      
-      JSON FORMATI:
-      {
-        "content": "markdown_formatında_ders_notları",
-        "simulationCode": "<html>...</html>",
-        "questions": [...]
-      }
+      - Yanıtı iki parça halinde ver:
+      - PARÇA 1: Aşağıdaki JSON formatında (Metin ve sorular):
+        {
+          "content": "markdown_formatı",
+          "questions": [...]
+        }
+      - PARÇA 2: Simülasyon kodunu SADECE <simulation_area>...</simulation_area> etiketleri içine yaz.
+      - Başka hiçbir açıklama metni ekleme.
     `;
 
     const key = (process.env.API_KEY || '').trim();
@@ -74,53 +72,35 @@ export async function POST(req: Request) {
     }
 
     if (!success) {
-      // KRİTİK ADIM: Mevcut modelleri listele (Neden 404 alıyoruz?)
-      let availableModels = 'Bilinmiyor';
+      throw new Error(`Modeller denendi ancak bulunamadı. Son Hata: ${lastError}`);
+    }
+
+    // 1. JSON Ayrıştırma
+    let jsonData: any = {};
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
       try {
-        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-        if (listRes.ok) {
-          const listData = await listRes.json();
-          availableModels = listData.models?.map((m: any) => m.name.replace('models/', '')).join(', ') || 'Model listesi boş';
-        } else {
-          availableModels = `Liste alınamadı (${listRes.status})`;
-        }
+        jsonData = JSON.parse(jsonMatch[0].replace(/[\u0000-\u001F\u007F-\u009F]/g, ""));
       } catch (e) {
-        availableModels = 'Liste sorgusu başarısız';
-      }
-
-      throw new Error(`Modeller denendi ancak bulunamadı. \nSenin anahtarının desteklediği modeller: ${availableModels}. \nSon Hata: ${lastError}`);
-    }
-
-    // JSON'ı metnin içinden regex ile ayıkla ve temizle
-    let jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Yapay zeka geçerli bir JSON yanıtı oluşturamadı. Lütfen tekrar deneyin.');
-    }
-
-    let cleanJson = jsonMatch[0];
-    
-    // JSON'ı bozan yaygın karakterleri temizle
-    try {
-      // Önce doğrudan deniyoruz
-      const data = JSON.parse(cleanJson);
-      return NextResponse.json(data);
-    } catch (parseError) {
-      console.log('Standard JSON parse failed, attempting deep clean...');
-      // Eğer doğrudan parse edilemezse, string içindeki kontrol karakterlerini ve kaçış hatalarını temizle
-      cleanJson = cleanJson
-        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Görünmez kontrol karakterlerini sil
-        .replace(/\\'/g, "'") // Yanlış kaçışlı tek tırnakları düzelt
-        .replace(/(?<!\\)"/g, '"'); // (Eğer gerekirse daha karmaşık regex eklenebilir)
-        
-      try {
-        const data = JSON.parse(cleanJson);
-        return NextResponse.json(data);
-      } catch (finalError: any) {
-        console.error('Final JSON Parse Error:', finalError.message);
-        console.error('Problematic JSON snippet:', cleanJson.substring(0, 500));
-        throw new Error(`İçerik formatı çözümlenemedi. (Hata: ${finalError.message})`);
+        console.error('JSON Parse Error:', e);
       }
     }
+
+    // 2. Simülasyon Kodu Ayrıştırma (Etiket içinden)
+    let simulationCode = '';
+    const simMatch = text.match(/<simulation_area>([\s\S]*?)<\/simulation_area>/);
+    if (simMatch) {
+      simulationCode = simMatch[1].trim();
+    } else {
+      // Fallback: Eğer etiket yoksa ama kod blokları varsa onları dene
+      const codeBlockMatch = text.match(/```html([\s\S]*?)```/);
+      if (codeBlockMatch) simulationCode = codeBlockMatch[1].trim();
+    }
+
+    return NextResponse.json({
+      ...jsonData,
+      simulationCode: simulationCode || jsonData.simulationCode
+    });
 
   } catch (error: any) {
     console.error('AI GENERATION FAILED:', error);
