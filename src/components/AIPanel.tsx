@@ -5,7 +5,7 @@ import { BookOpen, HelpCircle, Star, CheckCircle, XCircle, Loader2 } from 'lucid
 
 export default function AIPanel({ subject }: { subject: string }) {
   const [topic, setTopic] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -26,6 +26,7 @@ export default function AIPanel({ subject }: { subject: string }) {
 
   const generateContent = async (selectedTopic: string) => {
     setLoading(true);
+    setError(null);
     setTopic(selectedTopic);
     setData(null);
     setAnswers({});
@@ -36,12 +37,20 @@ export default function AIPanel({ subject }: { subject: string }) {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, topic: selectedTopic, grade: '9' }), // grade dinamik olabilir
+        body: JSON.stringify({ subject, topic: selectedTopic, grade: '9' }),
       });
+      
       const result = await res.json();
+      
+      if (!res.ok) {
+        setError(result.details || result.error || 'Bilinmeyen bir hata oluştu.');
+        return;
+      }
+      
       setData(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError('Sunucuya bağlanırken bir hata oluştu: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -86,6 +95,21 @@ export default function AIPanel({ subject }: { subject: string }) {
             </button>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '10vh', padding: '2rem' }}>
+        <XCircle size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+        <h3 style={{ color: '#ef4444' }}>Yapay Zeka Hatası</h3>
+        <div className="card" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#f87171', margin: '1.5rem 0', padding: '1rem' }}>
+          {error}
+        </div>
+        <button onClick={() => setTopic(null)} className="btn" style={{ background: 'hsl(var(--primary))' }}>
+          Geri Dön ve Tekrar Dene
+        </button>
       </div>
     );
   }
