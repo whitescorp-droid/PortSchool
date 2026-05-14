@@ -36,13 +36,17 @@ export async function POST(req: Request) {
       }
     `;
 
-    // Genişletilmiş Deneme Listesi (Sürüm + Model)
+    const key = (process.env.API_KEY || '').trim();
+    
+    // Debug: Key format kontrolü (Güvenli şekilde)
+    console.log(`KEY DEBUG: Starts with ${key.substring(0, 3)}, Ends with ${key.substring(key.length - 3)}, Length: ${key.length}`);
+
+    // Genişletilmiş Deneme Listesi
     const configurations = [
       { ver: 'v1beta', model: 'gemini-1.5-flash' },
       { ver: 'v1', model: 'gemini-1.5-flash' },
       { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
-      { ver: 'v1beta', model: 'gemini-pro' },
-      { ver: 'v1', model: 'gemini-pro' }
+      { ver: 'v1beta', model: 'gemini-pro' }
     ];
 
     let text = '';
@@ -51,37 +55,43 @@ export async function POST(req: Request) {
 
     for (const config of configurations) {
       if (success) break;
-      
       try {
-        console.log(`Trying ${config.model} on ${config.ver}...`);
         const apiUrl = `https://generativelanguage.googleapis.com/${config.ver}/models/${config.model}:generateContent?key=${key}`;
-        
         const res = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
         if (res.ok) {
           const result = await res.json();
           text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          if (text) {
-            success = true;
-            console.log(`Success with ${config.model} (${config.ver})`);
-          }
+          if (text) success = true;
         } else {
           const errorData = await res.json();
           lastError = `${config.ver}/${config.model} -> ${res.status}: ${errorData.error?.message || res.statusText}`;
         }
       } catch (err: any) {
-        lastError = `${config.ver}/${config.model} -> Connection Error: ${err.message}`;
+        lastError = err.message;
       }
     }
 
     if (!success) {
-      throw new Error(`Tüm modeller ve sürümler denendi. Son hata: ${lastError}`);
+      // KRİTİK ADIM: Mevcut modelleri listele (Neden 404 alıyoruz?)
+      let availableModels = 'Bilinmiyor';
+      try {
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          availableModels = listData.models?.map((m: any) => m.name.replace('models/', '')).join(', ') || 'Model listesi boş';
+        } else {
+          availableModels = `Liste alınamadı (${listRes.status})`;
+        }
+      } catch (e) {
+        availableModels = 'Liste sorgusu başarısız';
+      }
+
+      throw new Error(`Modeller denendi ancak bulunamadı. \nSenin anahtarının desteklediği modeller: ${availableModels}. \nSon Hata: ${lastError}`);
     }
 
     // JSON'ı metnin içinden regex ile ayıkla
