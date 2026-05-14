@@ -2,6 +2,8 @@ import { getSession } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LeaderboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
@@ -50,7 +52,7 @@ export default async function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {topStudents.map((student, index) => (
+              {topStudents.map((student: any, index: number) => (
                 <tr key={index} style={{ borderBottom: '1px solid hsl(var(--border))', background: index === 0 ? 'rgba(250, 204, 21, 0.05)' : 'transparent' }}>
                   <td style={{ padding: '1.5rem' }}>
                     {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}

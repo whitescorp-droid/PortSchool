@@ -2,6 +2,8 @@ import { getSession, logout } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
@@ -101,7 +103,7 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {user?.activities.map((activity) => (
+                  {user?.activities?.map((activity: any) => (
                     <tr key={activity.id} style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                       <td style={{ padding: '1rem' }}>{activity.type === 'QUESTION_SOLVED' ? 'Soru Çözüldü' : 'Ders Çalışıldı'}</td>
                       <td style={{ padding: '1rem' }}>{activity.details}</td>
