@@ -26,7 +26,15 @@ export async function POST(req: Request) {
       - PARÇA 1: Aşağıdaki JSON formatında (Metin ve sorular):
         {
           "content": "markdown_formatı",
-          "questions": [...]
+          "questions": [
+            {
+              "id": 1,
+              "question": "soru_metni",
+              "visual": "<svg>...</svg> (Gerekirse konuyu anlatan vektörel çizim, yoksa boş string)",
+              "options": ["A", "B", "C", "D"],
+              "correctAnswer": "0"
+            }
+          ]
         }
       - PARÇA 2: Simülasyon kodunu SADECE <simulation_area>...</simulation_area> etiketleri içine yaz.
       - Başka hiçbir açıklama metni ekleme.

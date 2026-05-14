@@ -217,6 +217,24 @@ export default function AIPanel({ subject }: { subject: string }) {
 
               {data?.questions.map((q: any) => (
                 <div key={q.id} className="card" style={{ marginBottom: '2rem', padding: '2rem', borderRadius: '24px' }}>
+                  
+                  {/* Question Visual (SVG) */}
+                  {q.visual && (
+                    <div 
+                      className="question-visual"
+                      style={{ 
+                        background: 'rgba(255,255,255,0.02)', 
+                        borderRadius: '16px', 
+                        padding: '1.5rem', 
+                        marginBottom: '2rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        border: '1px solid rgba(255,255,255,0.05)'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: q.visual }}
+                    />
+                  )}
+
                   <p style={{ fontWeight: '600', marginBottom: '2rem', fontSize: '1.25rem' }}>{q.id}. {q.question}</p>
                   <div style={{ display: 'grid', gap: '1rem' }}>
                     {q.options.map((option: string, index: number) => {
