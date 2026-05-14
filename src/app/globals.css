@@ -109,3 +109,13 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+.subject-card {
+  transition: transform 0.2s;
+}
+
+.subject-card:hover {
+  transform: translateY(-5px);
+  border-color: hsl(var(--primary));
+}
+

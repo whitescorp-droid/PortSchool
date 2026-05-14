@@ -81,15 +81,12 @@ export default async function DashboardPage() {
               <a 
                 key={subject.name}
                 href={`/dashboard/${subject.name.toLowerCase().replace(/ /g, '-')}`}
-                className="card" 
+                className="card subject-card" 
                 style={{ 
                   textDecoration: 'none', 
                   textAlign: 'center', 
-                  transition: 'transform 0.2s',
                   cursor: 'pointer'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '1rem' }}>{subject.icon}</span>
                 <span style={{ fontWeight: '500' }}>{subject.name}</span>
