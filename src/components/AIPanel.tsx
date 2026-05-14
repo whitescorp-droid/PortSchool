@@ -23,7 +23,7 @@ export default function AIPanel({ subject }: { subject: string }) {
     'ingilizce': ['Vocabulary', 'Grammar', 'Reading', 'Writing'],
   };
 
-  const currentTopics = topics[subject.toLowerCase()] || [];
+  const currentTopics = topics[subject.toLowerCase().replace(/-/g, ' ')] || [];
 
   const generateContent = async (selectedTopic: string) => {
     setLoading(true);
