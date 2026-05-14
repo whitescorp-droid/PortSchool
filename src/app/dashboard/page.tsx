@@ -47,7 +47,7 @@ export default async function DashboardPage() {
               <a href="/dashboard" style={{ display: 'block', padding: '0.75rem', borderRadius: 'var(--radius)', background: 'hsl(var(--accent))', textDecoration: 'none', color: 'white' }}>Panel</a>
             </li>
             <li style={{ marginBottom: '0.5rem' }}>
-              <a href="/leaderboard" style={{ display: 'block', padding: '0.75rem', borderRadius: 'var(--radius)', textDecoration: 'none', color: 'hsl(var(--muted-foreground))' }}>Liderlik Tablosu</a>
+              <a href="/leaderboard" style={{ display: 'block', padding: '0.75rem', borderRadius: 'var(--radius)', textDecoration: 'none', color: 'white', opacity: 0.8 }}>Liderlik Tablosu</a>
             </li>
           </ul>
         </nav>

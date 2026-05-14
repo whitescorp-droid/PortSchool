@@ -13,9 +13,12 @@ export default function AIPanel({ subject }: { subject: string }) {
 
   const topics: Record<string, string[]> = {
     'Matematik': ['Sayılar', 'Cebir', 'Geometri', 'Trigonometri', 'Türev', 'İntegral'],
-    'Fen Bilimleri': ['Hücre ve Bölünmeler', 'Kuvvet ve Enerji', 'Madde ve Isı', 'Vücudumuzdaki Sistemler'],
-    'Türkçe': ['Sözcükte Anlam', 'Cümlede Anlam', 'Paragraf', 'Yazım Kuralları'],
-    'Sosyal Bilgiler': ['Tarih', 'Coğrafya', 'Vatandaşlık', 'Ekonomi'],
+    'Fizik': ['Vektörler', 'Kuvvet ve Hareket', 'Elektrik ve Manyetizma', 'Optik', 'Modern Fizik'],
+    'Kimya': ['Atom ve Periyodik Sistem', 'Kimyasal Türler Arası Etkileşimler', 'Mol Kavramı', 'Organik Kimya'],
+    'Biyoloji': ['Hücre', 'Kalıtım', 'Ekosistem Ekolojisi', 'Sistemler'],
+    'Türk Dili ve Edebiyatı': ['Edebiyatın Esasları', 'Şiir', 'Roman', 'Tiyatro', 'Dil Bilgisi'],
+    'Tarih': ['Tarih ve Zaman', 'İlk Çağ Medeniyetleri', 'Osmanlı Tarihi', 'İnkılap Tarihi'],
+    'Coğrafya': ['Doğa ve İnsan', 'Dünyanın Şekli ve Hareketleri', 'Yerleşme ve Nüfus', 'Türkiye Coğrafyası'],
     'İngilizce': ['Vocabulary', 'Grammar', 'Reading', 'Writing'],
   };
 
@@ -78,7 +81,7 @@ export default function AIPanel({ subject }: { subject: string }) {
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           {currentTopics.map(t => (
-            <button key={t} onClick={() => generateContent(t)} className="btn" style={{ background: 'hsl(var(--secondary))' }}>
+            <button key={t} onClick={() => generateContent(t)} className="btn" style={{ background: 'hsl(var(--primary))', color: 'white' }}>
               {t}
             </button>
           ))}

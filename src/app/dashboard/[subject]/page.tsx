@@ -28,10 +28,10 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <aside style={{ width: '280px', borderRight: '1px solid hsl(var(--border))', padding: '2rem' }}>
-        <a href="/dashboard" style={{ color: 'hsl(var(--muted-foreground))', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+        <a href="/dashboard" style={{ color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', opacity: 0.8 }}>
           ← Geri Dön
         </a>
-        <h2 style={{ marginBottom: '1rem' }}>{subjectName}</h2>
+        <h2 style={{ marginBottom: '1rem', color: 'white' }}>{subjectName}</h2>
         <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', marginBottom: '2rem' }}>Çalışmak istediğin konuyu seç.</p>
         
         <nav>
@@ -45,7 +45,8 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
                   justifyContent: 'flex-start',
                   background: 'transparent',
                   border: '1px solid transparent',
-                  padding: '0.5rem 1rem'
+                  padding: '0.5rem 1rem',
+                  color: 'white'
                 }}
                 // İleride client component ile seçim yapılacak
               >
