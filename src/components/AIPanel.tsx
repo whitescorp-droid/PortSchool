@@ -174,7 +174,7 @@ export default function AIPanel({ subject }: { subject: string }) {
           <div style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>
             
             {/* Simulation Area */}
-            {data.simulationCode && (
+            {data?.simulationCode && (
               <div style={{ marginBottom: '4rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                   <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(var(--primary), 0.2)' }}>
