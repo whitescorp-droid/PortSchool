@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       
       <simulation_area>
       Buraya konuyu anlatan interaktif HTML/JS/CSS simülasyon kodunu yaz.
+      ÖNEMLİ: Koyu temaya uygun (#0f0f14) olsun. body { margin: 0; overflow: hidden; } kullan.
       </simulation_area>
       
       <questions_json>
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
         {
           "id": 1,
           "question": "soru_metni",
-          "visual": "<svg>...</svg> (Gerekirse çizim)",
+          "visual": "<svg>...</svg> (ÖNEMLİ: Çizimlerde mutlaka stroke='white' veya stroke='#e2e8f0' gibi açık renkler kullan!)",
           "options": ["A", "B", "C", "D"],
           "correctAnswer": "0"
         }

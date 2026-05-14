@@ -186,8 +186,9 @@ export default function AIPanel({ subject }: { subject: string }) {
                   <iframe 
                     srcDoc={data.simulationCode}
                     title="Simulation"
-                    style={{ width: '100%', height: '450px', border: 'none' }}
+                    style={{ width: '100%', height: '500px', border: 'none', display: 'block' }}
                     sandbox="allow-scripts"
+                    scrolling="no"
                   />
                 </div>
               </div>
@@ -223,13 +224,14 @@ export default function AIPanel({ subject }: { subject: string }) {
                     <div 
                       className="question-visual"
                       style={{ 
-                        background: 'rgba(255,255,255,0.02)', 
+                        background: '#1a1a24', 
                         borderRadius: '16px', 
-                        padding: '1.5rem', 
+                        padding: '2rem', 
                         marginBottom: '2rem',
                         display: 'flex',
                         justifyContent: 'center',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'white'
                       }}
                       dangerouslySetInnerHTML={{ __html: q.visual }}
                     />
