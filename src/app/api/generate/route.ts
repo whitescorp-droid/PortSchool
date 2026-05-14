@@ -88,7 +88,12 @@ export async function POST(req: Request) {
 
     // 1. Ders Notu Ayrıştırma
     const contentMatch = text.match(/<content_area>([\s\S]*?)<\/content_area>/);
-    const content = contentMatch ? contentMatch[1].trim() : 'Ders notu oluşturulamadı.';
+    let content = contentMatch ? contentMatch[1].trim() : '';
+
+    // FALLBACK: Eğer etiket bulunamadıysa ama ham metin varsa onu kullan
+    if (!content && text.length > 100) {
+      content = text.replace(/<[\s\S]*?>/g, '').substring(0, 5000); // Etiketleri temizle ve kullan
+    }
 
     // 2. Simülasyon Kodu Ayrıştırma
     const simMatch = text.match(/<simulation_area>([\s\S]*?)<\/simulation_area>/);
@@ -99,21 +104,21 @@ export async function POST(req: Request) {
     const questionsMatch = text.match(/<questions_json>([\s\S]*?)<\/questions_json>/);
     if (questionsMatch) {
       try {
-        questions = JSON.parse(questionsMatch[1].replace(/[\u0000-\u001F\u007F-\u009F]/g, ""));
+        const cleanJson = questionsMatch[1].replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim();
+        questions = JSON.parse(cleanJson);
       } catch (e) {
         console.error('Questions JSON Parse Error:', e);
-        // Fallback: Eğer etiket içi patlarsa tüm metindeki ilk diziyi dene
-        const fallbackMatch = text.match(/\[[\s\S]*\]/);
-        if (fallbackMatch) {
-          try { questions = JSON.parse(fallbackMatch[0]); } catch(e2) {}
-        }
       }
     }
 
+    if (!content && !simulationCode && questions.length === 0) {
+      throw new Error('Yapay zeka yanıt verdi ancak içerik ayıklanamadı. Lütfen tekrar deneyin.');
+    }
+
     return NextResponse.json({
-      content,
+      content: content || 'İçerik hazırlanırken bir sorun oluştu.',
       simulationCode,
-      questions: questions.length > 0 ? questions : []
+      questions: Array.isArray(questions) ? questions : []
     });
 
   } catch (error: any) {
