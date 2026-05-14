@@ -13,10 +13,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ders ve konu gereklidir.' }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel(
-      { model: 'gemini-1.5-flash' },
-      { apiVersion: 'v1' }
-    );
+    // API Key Güvenlik Kontrolü ve Loglama
+    const key = process.env.API_KEY || '';
+    console.log(`AI Request: Subject=${subject}, Topic=${topic}, Key starts with: ${key.substring(0, 5)}...`);
+
+    // Model seçimi (Alternatifleri dene)
+    let model;
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
+    } catch (e) {
+      console.log('Flash-8b failed, trying Pro...');
+      model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    }
 
     const prompt = `
       Sen profesyonel bir öğretmensin. 
