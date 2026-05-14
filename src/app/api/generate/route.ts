@@ -13,8 +13,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ders ve konu gereklidir.' }, { status: 400 });
     }
 
-    const key = process.env.API_KEY || '';
-    console.log(`AI Request: Subject=${subject}, Topic=${topic}`);
 
     const prompt = `
       Sen profesyonel bir öğretmensin. 
