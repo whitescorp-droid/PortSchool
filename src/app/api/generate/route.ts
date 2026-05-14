@@ -16,28 +16,29 @@ export async function POST(req: Request) {
 
     const prompt = `
       Sen profesyonel bir öğretmensin. 
-      ${grade || '9'}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
-      1. Detaylı, anlaşılır ve ilgi çekici ders notları hazırla. (Markdown formatında)
-      2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla.
-      3. Konuyu görselleştiren, interaktif, animasyonlu bir HTML/JS/CSS simülasyonu kodu hazırla.
+      ${grade || '9'}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında bir eğitim paketi hazırla.
       
-      ÖNEMLİ KURALLAR:
-      - Yanıtı iki parça halinde ver:
-      - PARÇA 1: Aşağıdaki JSON formatında (Metin ve sorular):
+      YANIT FORMATI (KESİNLİKLE BU SIRAYLA VE BU ETİKETLERLE):
+      
+      <content_area>
+      Buraya konuyu anlatan detaylı, markdown formatında ders notlarını yaz.
+      </content_area>
+      
+      <simulation_area>
+      Buraya konuyu anlatan interaktif HTML/JS/CSS simülasyon kodunu yaz.
+      </simulation_area>
+      
+      <questions_json>
+      [
         {
-          "content": "markdown_formatı",
-          "questions": [
-            {
-              "id": 1,
-              "question": "soru_metni",
-              "visual": "<svg>...</svg> (Gerekirse konuyu anlatan vektörel çizim, yoksa boş string)",
-              "options": ["A", "B", "C", "D"],
-              "correctAnswer": "0"
-            }
-          ]
+          "id": 1,
+          "question": "soru_metni",
+          "visual": "<svg>...</svg> (Gerekirse çizim)",
+          "options": ["A", "B", "C", "D"],
+          "correctAnswer": "0"
         }
-      - PARÇA 2: Simülasyon kodunu SADECE <simulation_area>...</simulation_area> etiketleri içine yaz.
-      - Başka hiçbir açıklama metni ekleme.
+      ]
+      </questions_json>
     `;
 
     const key = (process.env.API_KEY || '').trim();
@@ -83,31 +84,34 @@ export async function POST(req: Request) {
       throw new Error(`Modeller denendi ancak bulunamadı. Son Hata: ${lastError}`);
     }
 
-    // 1. JSON Ayrıştırma
-    let jsonData: any = {};
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
+    // 1. Ders Notu Ayrıştırma
+    const contentMatch = text.match(/<content_area>([\s\S]*?)<\/content_area>/);
+    const content = contentMatch ? contentMatch[1].trim() : 'Ders notu oluşturulamadı.';
+
+    // 2. Simülasyon Kodu Ayrıştırma
+    const simMatch = text.match(/<simulation_area>([\s\S]*?)<\/simulation_area>/);
+    const simulationCode = simMatch ? simMatch[1].trim() : '';
+
+    // 3. Sorular JSON Ayrıştırma
+    let questions = [];
+    const questionsMatch = text.match(/<questions_json>([\s\S]*?)<\/questions_json>/);
+    if (questionsMatch) {
       try {
-        jsonData = JSON.parse(jsonMatch[0].replace(/[\u0000-\u001F\u007F-\u009F]/g, ""));
+        questions = JSON.parse(questionsMatch[1].replace(/[\u0000-\u001F\u007F-\u009F]/g, ""));
       } catch (e) {
-        console.error('JSON Parse Error:', e);
+        console.error('Questions JSON Parse Error:', e);
+        // Fallback: Eğer etiket içi patlarsa tüm metindeki ilk diziyi dene
+        const fallbackMatch = text.match(/\[[\s\S]*\]/);
+        if (fallbackMatch) {
+          try { questions = JSON.parse(fallbackMatch[0]); } catch(e2) {}
+        }
       }
     }
 
-    // 2. Simülasyon Kodu Ayrıştırma (Etiket içinden)
-    let simulationCode = '';
-    const simMatch = text.match(/<simulation_area>([\s\S]*?)<\/simulation_area>/);
-    if (simMatch) {
-      simulationCode = simMatch[1].trim();
-    } else {
-      // Fallback: Eğer etiket yoksa ama kod blokları varsa onları dene
-      const codeBlockMatch = text.match(/```html([\s\S]*?)```/);
-      if (codeBlockMatch) simulationCode = codeBlockMatch[1].trim();
-    }
-
     return NextResponse.json({
-      ...jsonData,
-      simulationCode: simulationCode || jsonData.simulationCode
+      content,
+      simulationCode,
+      questions: questions.length > 0 ? questions : []
     });
 
   } catch (error: any) {
