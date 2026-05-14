@@ -20,7 +20,13 @@ export async function POST(req: Request) {
       1. Detaylı, anlaşılır ve ilgi çekici ders notları hazırla. (Markdown formatında)
       2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla. Her sorunun 4 şıkkı (A, B, C, D) ve 1 doğru cevabı olsun.
       
-      Yanıtı sadece aşağıdaki JSON formatında ver, başka hiçbir metin ekleme:
+      ÖNEMLİ KURALLAR:
+      - Yanıtı SADECE saf JSON formatında ver.
+      - JSON içindeki string değerlerde çift tırnak (") kullanman gerekirse mutlaka önüne ters eğik çizgi koy: \\"
+      - Yeni satırlar için mutlaka \\n karakterini kullan, gerçek yeni satıra geçme.
+      - Başka hiçbir açıklama metni ekleme.
+      
+      JSON FORMATI:
       {
         "content": "markdown_formatında_ders_notları",
         "questions": [
@@ -91,14 +97,36 @@ export async function POST(req: Request) {
       throw new Error(`Modeller denendi ancak bulunamadı. \nSenin anahtarının desteklediği modeller: ${availableModels}. \nSon Hata: ${lastError}`);
     }
 
-    // JSON'ı metnin içinden regex ile ayıkla
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // JSON'ı metnin içinden regex ile ayıkla ve temizle
+    let jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('Yapay zeka geçerli bir JSON yanıtı oluşturamadı. Lütfen tekrar deneyin.');
     }
 
-    const data = JSON.parse(jsonMatch[0]);
-    return NextResponse.json(data);
+    let cleanJson = jsonMatch[0];
+    
+    // JSON'ı bozan yaygın karakterleri temizle
+    try {
+      // Önce doğrudan deniyoruz
+      const data = JSON.parse(cleanJson);
+      return NextResponse.json(data);
+    } catch (parseError) {
+      console.log('Standard JSON parse failed, attempting deep clean...');
+      // Eğer doğrudan parse edilemezse, string içindeki kontrol karakterlerini ve kaçış hatalarını temizle
+      cleanJson = cleanJson
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Görünmez kontrol karakterlerini sil
+        .replace(/\\'/g, "'") // Yanlış kaçışlı tek tırnakları düzelt
+        .replace(/(?<!\\)"/g, '"'); // (Eğer gerekirse daha karmaşık regex eklenebilir)
+        
+      try {
+        const data = JSON.parse(cleanJson);
+        return NextResponse.json(data);
+      } catch (finalError: any) {
+        console.error('Final JSON Parse Error:', finalError.message);
+        console.error('Problematic JSON snippet:', cleanJson.substring(0, 500));
+        throw new Error(`İçerik formatı çözümlenemedi. (Hata: ${finalError.message})`);
+      }
+    }
 
   } catch (error: any) {
     console.error('AI GENERATION FAILED:', error);
