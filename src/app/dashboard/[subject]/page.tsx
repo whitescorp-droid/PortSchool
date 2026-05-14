@@ -31,4 +31,3 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
     </div>
   );
 }
-}
