@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, HelpCircle, Star, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { BookOpen, HelpCircle, Star, CheckCircle, XCircle, Loader2, Play } from 'lucide-react';
 
 export default function AIPanel({ subject }: { subject: string }) {
   const [topic, setTopic] = useState<string | null>(null);
@@ -171,7 +171,28 @@ export default function AIPanel({ subject }: { subject: string }) {
         )}
 
         {data && !loading && (
-          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>
+            
+            {/* Simulation Area */}
+            {data.simulationCode && (
+              <div style={{ marginBottom: '4rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                  <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(var(--primary), 0.2)' }}>
+                    <Play size={28} style={{ color: 'hsl(var(--primary))' }} />
+                  </div>
+                  <h2 style={{ fontSize: '2rem' }}>Görsel Deney Alanı</h2>
+                </div>
+                <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#0f0f14', borderRadius: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)' }}>
+                  <iframe 
+                    srcDoc={data.simulationCode}
+                    title="Simulation"
+                    style={{ width: '100%', height: '450px', border: 'none' }}
+                    sandbox="allow-scripts"
+                  />
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: '4rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                 <BookOpen size={28} style={{ color: 'hsl(var(--primary))' }} />

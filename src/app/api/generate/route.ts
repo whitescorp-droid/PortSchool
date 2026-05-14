@@ -18,25 +18,19 @@ export async function POST(req: Request) {
       Sen profesyonel bir öğretmensin. 
       ${grade || '9'}. sınıf öğrencisi için "${subject}" dersinin "${topic}" konusu hakkında:
       1. Detaylı, anlaşılır ve ilgi çekici ders notları hazırla. (Markdown formatında)
-      2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla. Her sorunun 4 şıkkı (A, B, C, D) ve 1 doğru cevabı olsun.
+      2. Bu konuyla ilgili 3 adet çoktan seçmeli soru hazırla.
+      3. Konuyu görselleştiren, interaktif, animasyonlu bir HTML/JS/CSS simülasyonu kodu hazırla. (Canvas veya modern CSS kullanabilirsin).
       
       ÖNEMLİ KURALLAR:
       - Yanıtı SADECE saf JSON formatında ver.
-      - JSON içindeki string değerlerde çift tırnak (") kullanman gerekirse mutlaka önüne ters eğik çizgi koy: \\"
-      - Yeni satırlar için mutlaka \\n karakterini kullan, gerçek yeni satıra geçme.
-      - Başka hiçbir açıklama metni ekleme.
+      - simulationCode alanı içinde SADECE tek bir HTML dosyası gibi çalışan (style ve script etiketleri dahil) kod döndür.
+      - Simülasyon arka planı koyu (#0f0f14) olsun ve modern bir görünüme sahip olsun.
       
       JSON FORMATI:
       {
         "content": "markdown_formatında_ders_notları",
-        "questions": [
-          {
-            "id": 1,
-            "question": "soru_metni",
-            "options": ["A_şıkkı", "B_şıkkı", "C_şıkkı", "D_şıkkı"],
-            "correctAnswer": "0"
-          }
-        ]
+        "simulationCode": "<html>...</html>",
+        "questions": [...]
       }
     `;
 
