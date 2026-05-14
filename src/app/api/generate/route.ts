@@ -36,31 +36,53 @@ export async function POST(req: Request) {
       }
     `;
 
-    // SDK yerine Doğrudan Fetch Kullanımı (Vercel için en kararlı yöntem)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-    
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
+    // Model deneme listesi (Sırasıyla dene)
+    const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    let text = '';
+    let success = false;
+    let lastError = '';
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Gemini API Error:', errorText);
-      throw new Error(`API Hatası: ${res.status} - ${res.statusText}`);
+    for (const modelName of models) {
+      if (success) break;
+      
+      try {
+        console.log(`Trying model: ${modelName}...`);
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${key}`;
+        
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            success = true;
+            console.log(`Successfully generated with ${modelName}`);
+          }
+        } else {
+          const errorData = await res.json();
+          lastError = `API ${res.status}: ${errorData.error?.message || res.statusText}`;
+          console.warn(`${modelName} failed: ${lastError}`);
+        }
+      } catch (err: any) {
+        lastError = err.message;
+        console.error(`${modelName} connection error:`, err);
+      }
     }
 
-    const result = await res.json();
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
+    if (!success) {
+      throw new Error(`Tüm modeller denendi ancak başarısız oldu. Son hata: ${lastError}`);
+    }
+
     // JSON'ı metnin içinden regex ile ayıkla
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('No JSON found in AI response:', text);
-      throw new Error('Yapay zeka geçerli bir JSON yanıtı oluşturamadı.');
+      throw new Error('Yapay zeka geçerli bir JSON yanıtı oluşturamadı. Lütfen tekrar deneyin.');
     }
 
     const data = JSON.parse(jsonMatch[0]);
