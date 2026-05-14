@@ -232,4 +232,3 @@ export default function AIPanel({ subject }: { subject: string }) {
     </div>
   );
 }
-}
